@@ -6,12 +6,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/user")
 public class UserController {
 
+    // Metodo para retornar uma mensagem de sucesso, indicando que o usuario está logado
     @GetMapping
-    public ResponseEntity<String> getUsers() {
-        return ResponseEntity.ok("Sucesso!!!");
+    public ResponseEntity<String> getUser() {
+        return ResponseEntity.ok("Usuario Logado com Sucesso!!!");
     }
 
 }

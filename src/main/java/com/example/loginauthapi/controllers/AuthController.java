@@ -27,10 +27,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginRequestDTO body) {
-        User user = this.repository.findByEmail(body.email()).orElseThrow(() -> new RuntimeException("User not found"));
+        // Busca o usuario pelo email, caso não encontre, lança uma exceção, caso encontre, verifica se a senha é válida
+        User user = this.repository.findByEmail(body.email()).orElseThrow(() -> new RuntimeException("Não foi possível encontrar o usuário"));
+        // Verifica se a senha é valida, caso seja, gera o token e retorna o nome do usuário e o token, caso não seja, retorna um erro 400
         if(passwordEncoder.matches(body.password(), user.getPassword())) {
-            String token = tokenService.generateToken(user);
-            return ResponseEntity.ok(token);
+            String token = this.tokenService.generateToken(user);
+            return ResponseEntity.ok(new ResponseDTO(user.getName(), token));
         }
         return ResponseEntity.badRequest().build();
     };
@@ -38,17 +40,20 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody RegisterRequestDTO body) {
         Optional<User> user = this.repository.findByEmail(body.email());
-
+        // se o usuario não existir, cria um novo usuario com os dados do corpo da requisição
         if(user.isEmpty()) {
             User newUser = new User();
-            newUser.setEmail(body.email());
-            newUser.setPassword(passwordEncoder.encode(body.password()));
-            newUser.setName(body.name());
-            this.repository.save(newUser);
+            newUser.setPassword(passwordEncoder.encode(body.password())); //codifica a senha
+            newUser.setEmail(body.email()); //seta o email
+            newUser.setName(body.name()); //seta o nome
+            this.repository.save(newUser); //salva o novo usuario
 
-            String token = tokenService.generateToken(newUser);
+            // gera o token e retorna o nome do usuario e o token
+            String token = this.tokenService.generateToken(newUser); 
+            // retorna o nome do usuario e o token
             return ResponseEntity.ok(new ResponseDTO(newUser.getName(), token));
         }
+        // se o usuario já existir, retorna uma resposta com status 400
         return ResponseEntity.badRequest().build();
     }
 
